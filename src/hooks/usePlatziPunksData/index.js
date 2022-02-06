@@ -3,6 +3,8 @@ import { useCallback, useEffect, useState } from "react";
 // Imports the custom hook usePlatziPunks
 import usePlatziPunks from "../usePlatziPunks";
 
+// Receives the contract and the tokenId
+// Returns the data of the token, including metadata
 const getPunkData = async ({ platziPunks, tokenId }) => {
   const [
     tokenURI,
