@@ -70,36 +70,52 @@ const getPunkData = async ({ platziPunks, tokenId }) => {
   };
 };
 
-// Plural
+// Función principal: Mientras carga muestra un spinner, cuando ha
+// cargado los punks, muestra estos
 const usePlatziPunksData = () => {
+  // NFT, Spinner y hook del contrato
   const [punks, setPunks] = useState([]);
   const [loading, setLoading] = useState(true);
   const platziPunks = usePlatziPunks();
 
+  // La función update se ejecuta cada vez que cambia el contrato
   const update = useCallback(async () => {
+    // Si el contrato ha sido instanciado
     if (platziPunks) {
+      // Loading = True
       setLoading(true);
 
+      // Creamos tokenIds
       let tokenIds;
 
+      // Recogemos el supply total (total de NFT creados)
       const totalSupply = await platziPunks.methods.totalSupply().call();
+
+      // Creamos un array vacío del tamaño de elementos de totalSupply
       tokenIds = new Array(Number(totalSupply)).fill().map((_, index) => index);
 
+      // Mapeamos todos los tokens minteados en el array creado
       const punksPromise = tokenIds.map((tokenId) =>
         getPunkData({ tokenId, platziPunks })
       );
 
+      // Recogemos los datos de punksPromise
       const punks = await Promise.all(punksPromise);
 
+      // Actualizamos la variable punks con la nueva variable punks
       setPunks(punks);
+
+      // Loading = False
       setLoading(false);
     }
   }, [platziPunks]);
 
+  // Use effect que llama a update
   useEffect(() => {
     update();
   }, [update]);
 
+  // Devolvemos las variables loading, punks y la función update
   return {
     loading,
     punks,
@@ -107,9 +123,32 @@ const usePlatziPunksData = () => {
   };
 };
 
-// Singular
-// const usePlatziPunkData = () => {
+const usePlatziPunkData = (tokenId = null) => {
+  const [punk, setPunk] = useState({});
+  const [loading, setLoading] = useState(true);
+  const platziPunks = usePlatziPunks();
 
-// }
+  const update = useCallback(async () => {
+    if (platziPunks && tokenId != null) {
+      setLoading(true);
 
-export { usePlatziPunksData };
+      const toSet = await getPunkData({ tokenId, platziPunks });
+      setPunk(toSet);
+
+      setLoading(false);
+    }
+  }, [platziPunks, tokenId]);
+
+  useEffect(() => {
+    update();
+  }, [update]);
+
+  return {
+    loading,
+    punk,
+    update,
+  };
+};
+
+// Exporta las funciónes
+export { usePlatziPunksData, usePlatziPunkData };
